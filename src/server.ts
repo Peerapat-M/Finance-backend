@@ -19,20 +19,12 @@ const authenticateUser = async (req: Request, res: Response, next: () => void) =
     return res.status(401).json({ error: 'Missing access token' });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
-
-  // ดักตรวจเช็ค: หากค่าพัง จะได้รู้ทันทีจากหน้า Logs ของ Render
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("❌ [ERROR] Missing SUPABASE_URL or SUPABASE_ANON_KEY in environment variables!");
-    return res.status(500).json({ error: 'Database configuration missing on server' });
-  }
-
+  // สร้าง Supabase client พิเศษเฉพาะ Request นี้เพื่อใช้สิทธิ์ของ User คนนั้นทำงาน
   const userSupabase = createClient(
-    supabaseUrl,
-    supabaseKey,
+    process.env.SUPABASE_URL || '',
+    process.env.SUPABASE_ANON_KEY || '',
     {
-      auth: { persistSession: false },
+      auth: { persistSession: false }, // แนะนำให้ปิดการจำ session ในฝั่ง backend
       global: { headers: { Authorization: `Bearer ${token}` } }
     }
   );
